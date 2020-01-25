@@ -16,22 +16,22 @@ class FriendlychatApp extends StatelessWidget {
 }
 
 
-class ChatScreen extends StatefulWidget {                     //modified
-    @override                                                        //new
-    State createState() => new ChatScreenState();                    //new
+class ChatScreen extends StatefulWidget {
+    @override
+    State createState() => new ChatScreenState();
 }
 
-// Adding the ChatScreenState class definition in main.dart.
 
-class ChatScreenState extends State<ChatScreen> {                  //new
-    final List<ChatMessage> _messages = <ChatMessage>[];             // new
-    final TextEditingController _textController = new TextEditingController(); //new
-    // Add the following code in the ChatScreenState class definition.
+
+class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
+    final List<ChatMessage> _messages = <ChatMessage>[];
+    final TextEditingController _textController = new TextEditingController();
+
 
     Widget _buildTextComposer() {
-        return new IconTheme(                                            //new
-            data: new IconThemeData(color: Theme.of(context).accentColor), //new
-            child: new Container(                                     //modified
+        return new IconTheme(
+            data: new IconThemeData(color: Theme.of(context).accentColor),
+            child: new Container(
                 margin: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: new Row(
                     children: <Widget>[
@@ -51,40 +51,46 @@ class ChatScreenState extends State<ChatScreen> {                  //new
                         ),
                     ],
                 ),
-            ),                                                             //new
+            ),
         );
     }
     void _handleSubmitted(String text) {
         _textController.clear();
-        ChatMessage message = new ChatMessage(                         //new
-            text: text,                                                  //new
-        );                                                             //new
-        setState(() {                                                  //new
-            _messages.insert(0, message);                                //new
-        });                                                            //new
+        ChatMessage message = new ChatMessage(
+            text: text,
+            animationController: new AnimationController(
+                duration: new Duration(milliseconds: 500),
+                vsync: this,
+            ),
+        );
+
+        setState(() {
+            _messages.insert(0, message);
+        });
+        message.animationController.forward();//new
     }
-    @override                                                        //new
+    @override
     Widget build(BuildContext context) {
         return new Scaffold(
             appBar: new AppBar(title: new Text("Friendlychat")),
-            body: new Column(                                        //modified
-                children: <Widget>[                                         //new
-                    new Flexible(                                             //new
-                        child: new ListView.builder(                            //new
-                            padding: new EdgeInsets.all(8.0),                     //new
-                            reverse: true,                                        //new
-                            itemBuilder: (_, int index) => _messages[index],      //new
-                            itemCount: _messages.length,                          //new
-                        ),                                                      //new
-                    ),                                                        //new
-                    new Divider(height: 1.0),                                 //new
-                    new Container(                                            //new
+            body: new Column(
+                children: <Widget>[
+                    new Flexible(
+                        child: new ListView.builder(
+                            padding: new EdgeInsets.all(8.0),
+                            reverse: true,
+                            itemBuilder: (_, int index) => _messages[index],
+                            itemCount: _messages.length,
+                        ),
+                    ),
+                    new Divider(height: 1.0),
+                    new Container(
                         decoration: new BoxDecoration(
-                              color: Theme.of(context).cardColor),                  //new
-                        child: _buildTextComposer(),                       //modified
-                    ),                                                        //new
-                ],                                                          //new
-            ),                                                            //new
+                              color: Theme.of(context).cardColor),
+                        child: _buildTextComposer(),
+                    ),
+                ],
+            ),
         );
     }
 }
@@ -92,11 +98,16 @@ const String _name = "Aishwary Shukla";     //hard coding the name for simplicit
 
 
 class ChatMessage extends StatelessWidget {
-    ChatMessage({this.text});
+    ChatMessage({this.text, this.animationController});
     final String text;
+    final AnimationController animationController;  // Using the AnimationController class to specify how the animation should run
     @override
     Widget build(BuildContext context) {
-        return new Container(
+        return new SizeTransition(
+              sizeFactor: new CurvedAnimation(
+              parent: animationController, curve: Curves.easeOut),
+        axisAlignment: 0.0,
+        child: new Container(
             margin: const EdgeInsets.symmetric(vertical: 10.0),
             child: new Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,18 +116,21 @@ class ChatMessage extends StatelessWidget {
                         margin: const EdgeInsets.only(right: 16.0),
                         child: new CircleAvatar(child: new Text(_name[0])),
                     ),
-                    new Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                            new Text(_name, style: Theme.of(context).textTheme.subhead),
-                            new Container(
-                                margin: const EdgeInsets.only(top: 5.0),
-                                child: new Text(text),
-                            ),
-                        ],
+                    new Expanded(                           //Using the expand widget to allow writing of longer messages.
+                      child: new Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                              new Text(_name, style: Theme.of(context).textTheme.subhead),
+                              new Container(
+                                  margin: const EdgeInsets.only(top: 5.0),
+                                  child: new Text(text),
+                              ),
+                          ],
+                      ),
                     ),
                 ],
             ),
+        )
         );
     }
 }
